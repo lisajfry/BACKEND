@@ -9,24 +9,26 @@ class Absensi extends Model
 {
     use HasFactory;
 
-    // Tentukan tabel yang akan dihubungkan oleh model ini
     protected $table = 'absensi';
 
-    // Field yang boleh diisi secara massal
     protected $fillable = [
-        'id_user',
+        'id_karyawan',
         'tanggal',
         'jam_masuk',
         'jam_keluar',
         'foto_masuk',
         'foto_keluar',
+        'latitude_masuk',
+        'longitude_masuk',
+        'latitude_keluar',
+        'longitude_keluar',
         'lokasi_masuk',
         'lokasi_keluar',
+        'status',
     ];
 
-    // Definisikan hubungan ke model User
-    public function user()
+    public function karyawan()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(Karyawan::class, 'id_karyawan');
     }
 }

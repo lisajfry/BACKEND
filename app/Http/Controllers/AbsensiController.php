@@ -2,151 +2,54 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use GuzzleHttp\Client;
 use App\Models\Absensi;
+use Illuminate\Http\Request;
 
 class AbsensiController extends Controller
 {
-    /**
-     * Fungsi untuk mendapatkan alamat dari koordinat GPS (latitude, longitude)
-     * menggunakan Google Maps Geocoding API
-     */
-    public function getAddressFromCoordinates($latitude, $longitude)
+    // Metode index tetap sama
+    public function index()
     {
-        $client = new Client();
-        $url = "https://nominatim.openstreetmap.org/reverse";
-
-        try {
-            $response = $client->get($url, [
-                'query' => [
-                    'lat' => $latitude,
-                    'lon' => $longitude,
-                    'format' => 'json',
-                    'addressdetails' => 1,
-                ],
-                'headers' => [
-                    'User-Agent' => 'login_signup/1.0' // Ganti dengan nama aplikasi Anda
-                ]
-            ]);
-
-            $data = json_decode($response->getBody(), true);
-
-            if (isset($data['display_name'])) {
-                return $data['display_name'];
-            } else {
-                return "Alamat tidak ditemukan";
-            }
-        } catch (\Exception $e) {
-            return "Terjadi kesalahan: " . $e->getMessage();
-        }
+        $absensi = Absensi::all();
+        return response()->json($absensi);
     }
 
-    /**
-     * Fungsi untuk absen masuk
-     */
+    // Metode untuk absen masuk
     public function absenMasuk(Request $request)
     {
-        // Validasi data request
-        $request->validate([
-            'id_user' => 'required|integer',
-            'latitude' => 'required|numeric',
-            'longitude' => 'required|numeric',
-            'foto_masuk' => 'nullable|image|max:2048', // Validasi untuk foto
+        $validatedData = $request->validate([
+            'id_karyawan' => 'required|exists:karyawans,id',
+            'tanggal' => 'required|date',
+            'jam_masuk' => 'required|date_format:H:i:s',
+            'foto_masuk' => 'nullable|string', // Tetap gunakan string
+            'latitude_masuk' => 'nullable|numeric',
+            'longitude_masuk' => 'nullable|numeric',
+            'lokasi_masuk' => 'nullable|string',
+            'status' => 'required|in:hadir,alfa,izin,sakit', // Validasi status
         ]);
 
-        // Ambil latitude dan longitude dari request
-        $latitude = $request->input('latitude');
-        $longitude = $request->input('longitude');
-
-        // Dapatkan alamat dari reverse geocoding
-        $alamat = $this->getAddressFromCoordinates($latitude, $longitude);
-
-        // Simpan data absensi masuk ke dalam database
-        $absensi = new Absensi();
-        $absensi->id_user = $request->input('id_user');
-        $absensi->tanggal = now()->format('Y-m-d');
-        $absensi->jam_masuk = now()->format('H:i:s');
-
-        // Upload foto masuk
-        if ($request->hasFile('foto_masuk')) {
-            $file = $request->file('foto_masuk');
-            $fileName = time() . '_' . $file->getClientOriginalName();
-            $file->move(public_path('uploads/foto_masuk'), $fileName);
-            $absensi->foto_masuk = 'uploads/foto_masuk/' . $fileName;
-        }
-
-        $absensi->lokasi_masuk = $alamat; // Simpan alamat hasil reverse geocoding
-        $absensi->save();
-
-        return response()->json([
-            'message' => 'Absen masuk berhasil',
-            'data' => $absensi
-        ], 200);
+        $absensi = Absensi::create($validatedData);
+        return response()->json($absensi, 201);
     }
 
-    /**
-     * Fungsi untuk absen keluar
-     */
     public function absenKeluar(Request $request)
     {
-        // Validasi data request
-        $request->validate([
-            'id_user' => 'required|integer',
-            'latitude' => 'required|numeric',
-            'longitude' => 'required|numeric',
-            'foto_keluar' => 'nullable|image|max:2048', // Validasi untuk foto keluar
+        $validatedData = $request->validate([
+            'id_karyawan' => 'required|exists:karyawans,id',
+            'tanggal' => 'required|date',
+            'jam_keluar' => 'required|date_format:H:i:s',
+            'foto_keluar' => 'nullable|string', // Tetap gunakan string
+            'latitude_keluar' => 'nullable|numeric',
+            'longitude_keluar' => 'nullable|numeric',
+            'lokasi_keluar' => 'nullable|string',
+            'status' => 'required|in:hadir,alfa,izin,sakit', // Validasi status
         ]);
 
-        // Ambil latitude dan longitude dari request
-        $latitude = $request->input('latitude');
-        $longitude = $request->input('longitude');
+        $absensi = Absensi::where('id_karyawan', $validatedData['id_karyawan'])
+            ->where('tanggal', $validatedData['tanggal'])
+            ->firstOrFail();
 
-        // Dapatkan alamat dari reverse geocoding
-        $alamat = $this->getAddressFromCoordinates($latitude, $longitude);
-
-        // Cari data absensi hari ini berdasarkan id_user dan tanggal
-        $absensi = Absensi::where('id_user', $request->input('id_user'))
-                    ->whereDate('tanggal', now()->format('Y-m-d'))
-                    ->first();
-
-        if (!$absensi) {
-            return response()->json(['message' => 'Data absensi tidak ditemukan'], 404);
-        }
-
-        // Update data absensi keluar
-        $absensi->jam_keluar = now()->format('H:i:s');
-
-        // Upload foto keluar
-        if ($request->hasFile('foto_keluar')) {
-            $file = $request->file('foto_keluar');
-            $fileName = time() . '_' . $file->getClientOriginalName();
-            $file->move(public_path('uploads/foto_keluar'), $fileName);
-            $absensi->foto_keluar = 'uploads/foto_keluar/' . $fileName;
-        }
-
-        $absensi->lokasi_keluar = $alamat; // Simpan alamat hasil reverse geocoding
-        $absensi->save();
-
-        return response()->json([
-            'message' => 'Absen keluar berhasil',
-            'data' => $absensi
-        ], 200);
+        $absensi->update($validatedData);
+        return response()->json($absensi);
     }
-
-    public function riwayatAbsensi(Request $request)
-{
-    $request->validate([
-        'id_user' => 'required|integer',
-    ]);
-
-    $idUser = $request->input('id_user');
-    $riwayat = Absensi::where('id_user', $idUser)->orderBy('tanggal', 'desc')->get();
-
-    return response()->json([
-        'message' => 'Riwayat absensi berhasil diambil',
-        'data' => $riwayat
-    ], 200);
-}
-
 }

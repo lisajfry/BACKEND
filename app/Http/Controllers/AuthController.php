@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use App\Models\User;
+use App\Models\Karyawan;
 use Illuminate\Support\Facades\Hash;
 use Tymon\JWTAuth\Facades\JWTAuth;
 
@@ -15,15 +15,15 @@ class AuthController extends Controller
         // Melakukan validasi data input pengguna sebelum registrasi
         $this->validate($request, [
             'nama_karyawan' => 'required|string|max:255',
-            'nik' => 'required|string|max:20|unique:users',
-            'email' => 'required|string|email|max:255|unique:users',
+            'nik' => 'required|string|max:20|unique:karyawans',
+            'email' => 'required|string|email|max:255|unique:karyawans',
             'no_handphone' => 'required|string|max:15',
             'alamat' => 'required|string',
             'password' => 'required|string|min:6|confirmed',
         ]);
 
         // Membuat pengguna baru dengan data yang sudah divalidasi
-        $user = User::create([
+        $karyawan = Karyawan::create([
             'nama_karyawan' => $request->nama_karyawan,
             'nik' => $request->nik,
             'email' => $request->email,
@@ -33,45 +33,66 @@ class AuthController extends Controller
         ]);
 
         // Membuat token JWT untuk pengguna yang baru dibuat
-        $token = JWTAuth::fromUser($user);
+        $token = JWTAuth::fromUser($karyawan);
 
-        // Mengembalikan respons JSON berisi data pengguna dan token JWT dengan status HTTP 201 (Created)
-        return response()->json(compact('user', 'token'), 201);
+        return response()->json(compact('karyawan', 'token'), 201);
     }
 
     public function login(Request $request)
     {
-        // Mengambil email dan password dari input request
+        // Validasi input login
+        $this->validate($request, [
+            'email' => 'required|string|email',
+            'password' => 'required|string',
+            'device_code' => 'required|string', // Device code should be sent with the request
+        ]);
+
+        // Ambil data email dan password
         $credentials = $request->only('email', 'password');
 
-        // Mencoba melakukan login menggunakan JWTAuth dengan kredensial yang diberikan
-        if (!$token = JWTAuth::attempt($credentials)) {
-            return response()->json(['error' => 'Terjadi kesalahan'], 401);
+        // Mencari karyawan berdasarkan email
+        $karyawan = Karyawan::where('email', $request->email)->first();
+
+        // Cek apakah karyawan ditemukan
+        if (!$karyawan) {
+            return response()->json(['error' => 'Karyawan not found'], 404);
         }
 
-        // Jika login berhasil, kembalikan token JWT dalam format JSON
+        // Cek apakah device_code sudah terdaftar
+        if ($karyawan->device_code && $karyawan->device_code !== $request->device_code) {
+            return response()->json(['error' => 'This account is already linked to another device'], 403);
+        }
+
+        // Jika device_code belum terdaftar, simpan device_code
+        if (!$karyawan->device_code) {
+            $karyawan->device_code = $request->device_code;
+            $karyawan->save();
+        }
+
+        // Coba login dengan JWTAuth
+        if (!$token = JWTAuth::attempt($credentials)) {
+            return response()->json(['error' => 'Invalid credentials'], 401);
+        }
+
         return response()->json(compact('token'));
     }
 
     public function logout()
     {
-        // Mengeluarkan (logout) pengguna yang sedang login
-        Auth::logout();
-        // Mengembalikan respons JSON dengan pesan berhasil logout
+        // Invalidate token saat logout
+        JWTAuth::invalidate(JWTAuth::getToken());
+
         return response()->json(['message' => 'Successfully logged out']);
     }
 
-    public function getUser(Request $request)
+    public function getKaryawan(Request $request)
     {
-        // Mengambil data pengguna yang sedang login berdasarkan token JWT yang diterima
-        $user = JWTAuth::parseToken()->authenticate();
+        $karyawan = JWTAuth::parseToken()->authenticate();
 
-        // Jika pengguna tidak ditemukan, kembalikan respons error User Not Found (404)
-        if (!$user) {
-            return response()->json(['message' => 'User not found'], 404);
+        if (!$karyawan) {
+            return response()->json(['message' => 'Karyawan not found'], 404);
         }
 
-        // Jika pengguna ditemukan, kembalikan data pengguna dalam format JSON
-        return response()->json(compact('user'), 200);
+        return response()->json(compact('karyawan'), 200);
     }
 }

@@ -10,7 +10,7 @@ use Illuminate\Http\Request;
 class Authenticate extends Middleware
 {
     /**
-     * Get the path the user should be redirected to when they are not authenticated.
+     * Get the path the karyawan should be redirected to when they are not authenticated.
      */
     // Mengecek apakah request mengharapkan respon JSON
     // Jika tidak mengharapkan JSON, pengguna akan diarahkan ke halaman login
@@ -18,4 +18,6 @@ class Authenticate extends Middleware
     {
         return $request->expectsJson() ? null : route('login');
     }
+
+    
 }

@@ -15,7 +15,7 @@ return [
 
     'defaults' => [
         'guard' => 'web',
-        'passwords' => 'users',
+        'passwords' => 'karyawan',
     ],
 
     /*
@@ -25,11 +25,11 @@ return [
     |
     | Next, you may define every authentication guard for your application.
     | Of course, a great default configuration has been defined for you
-    | here which uses session storage and the Eloquent user provider.
+    | here which uses session storage and the Eloquent karyawan provider.
     |
-    | All authentication drivers have a user provider. This defines how the
-    | users are actually retrieved out of your database or other storage
-    | mechanisms used by this application to persist your user's data.
+    | All authentication drivers have a karyawan provider. This defines how the
+    | karyawan are actually retrieved out of your database or other storage
+    | mechanisms used by this application to persist your karyawan's data.
     |
     | Supported: "session"
     |
@@ -38,12 +38,13 @@ return [
    'guards' => [
     'web' => [
         'driver' => 'session',
-        'provider' => 'users',
+        'provider' => 'karyawans',
     ],
+    
 
     'api' => [
         'driver' => 'jwt', 
-        'provider' => 'users',
+        'provider' => 'karyawans',
         'hash' => false,
     ],
 ],
@@ -66,10 +67,12 @@ return [
     */
 
     'providers' => [
-        'users' => [
+        'karyawans' => [
             'driver' => 'eloquent',
-            'model' => App\Models\User::class,
+            'model' => App\Models\Karyawan::class,
         ],
+
+
 
         // 'users' => [
         //     'driver' => 'database',
@@ -97,8 +100,8 @@ return [
     */
 
     'passwords' => [
-        'users' => [
-            'provider' => 'users',
+        'karyawan' => [
+            'provider' => 'karyawan',
             'table' => 'password_reset_tokens',
             'expire' => 60,
             'throttle' => 60,
