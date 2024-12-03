@@ -30,13 +30,9 @@ return new class extends Migration
             $table->decimal('longitude_masuk', 10, 7)->nullable(); // Longitude lokasi masuk
             $table->decimal('latitude_keluar', 10, 7)->nullable(); // Latitude lokasi keluar
             $table->decimal('longitude_keluar', 10, 7)->nullable(); // Longitude lokasi keluar
-
-            // Simpan lokasi hasil reverse geocoding
-            $table->string('lokasi_masuk')->nullable(); // Lokasi saat masuk
-            $table->string('lokasi_keluar')->nullable(); // Lokasi saat keluar
-
+            
             // Tambahkan kolom status
-            $table->enum('status', ['hadir', 'alfa', 'izin', 'sakit'])->default('hadir');
+            $table->enum('status', ['terlambat', 'tepat_waktu'])->default('terlambat');
 
             $table->timestamps(); // Created at dan Updated at
         });

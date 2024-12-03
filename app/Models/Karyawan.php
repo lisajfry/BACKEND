@@ -12,7 +12,7 @@ class Karyawan extends Authenticatable implements JWTSubject
 
     // Kolom-kolom yang boleh diisi secara massal
     protected $fillable = [
-        'nama_karyawan', 'nik', 'email', 'no_handphone', 'alamat', 'password', 'device_code', 'avatar'
+        'nama_karyawan', 'nik', 'nip', 'email', 'no_handphone', 'alamat', 'password', 'device_code', 'avatar', 'jabatan_id'
     ];
 
     // Kolom-kolom yang disembunyikan dari representasi array atau JSON
@@ -43,4 +43,14 @@ class Karyawan extends Authenticatable implements JWTSubject
     {
         return $this->hasMany(Absensi::class);
     }
+
+    /**
+     * Relasi antara karyawan dan jabatan
+     */
+    // Model Karyawan.php
+public function jabatan()
+{
+    return $this->belongsTo(Jabatan::class, 'jabatan_id'); // Asumsi kolom foreign key-nya adalah 'id_jabatan'
+}
+
 }

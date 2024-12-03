@@ -10,18 +10,34 @@ use Illuminate\Support\Facades\Storage;
 class ProfileController extends Controller
 {
     public function index()
-    {
-        $employee = Auth::guard('api')->user();
-        return response()->json([
-            'success' => true,
-            'profile' => $employee,
-        ]);
-    }
+{
+    $employee = Auth::guard('api')->user();
+    
+    // Mengambil nama jabatan dari relasi
+    $jabatan = $employee->jabatan ? $employee->jabatan->jabatan : null;
+
+    return response()->json([
+        'success' => true,
+        'profile' => [
+            'nip' => $employee->nip,  // Menambahkan NIP
+            'nik' => $employee->nik,  // Menambahkan NIK
+            'nama_karyawan' => $employee->nama_karyawan,
+            'email' => $employee->email,
+            'no_handphone' => $employee->no_handphone,
+            'alamat' => $employee->alamat,
+            'avatar' => $employee->avatar,
+            'jabatan' => $jabatan,  // Menambahkan nama jabatan
+        ],
+    ]);
+}
+
+
 
     public function update(Request $request)
     {
         // Validasi data input
         $request->validate([
+            
             'nama_karyawan' => 'required|string|max:255',
             'no_handphone' => 'required|string|max:15',
             'alamat' => 'required|string|max:255',
@@ -31,6 +47,7 @@ class ProfileController extends Controller
             // Ambil karyawan yang sedang login
             $karyawan = Auth::guard('api')->user();
             // Update data karyawan
+            
             $karyawan->nama_karyawan = $request->input('nama_karyawan');
             $karyawan->no_handphone = $request->input('no_handphone');
             $karyawan->alamat = $request->input('alamat');
@@ -39,7 +56,7 @@ class ProfileController extends Controller
             // Kembalikan respons sukses
             return response()->json([
                 'status' => 'success',
-                'message' => 'Profile updated successfully',
+                'message' => 'Profile update d successfully',
                 'profile' => $karyawan,
             ], 200);
         } catch (\Exception $e) {
@@ -62,10 +79,7 @@ class ProfileController extends Controller
         try {
             $karyawan = Auth::guard('api')->user();
             
-            // Jika ada avatar yang sebelumnya, hapus avatar tersebut
-            if ($karyawan->avatar) {
-                Storage::delete($karyawan->avatar);
-            }
+           
 
             // Simpan file avatar baru
             $path = $request->file('avatar')->store('avatars', 'public');
