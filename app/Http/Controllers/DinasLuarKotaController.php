@@ -131,6 +131,3 @@ class DinasLuarKotaController extends Controller
         return response()->json(['message' => 'Dinas luar kota berhasil dihapus']);
     }
 }
-
-
-

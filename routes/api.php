@@ -6,9 +6,12 @@ use App\Http\Controllers\LemburController;
 use App\Http\Controllers\IzinController;
 use App\Http\Controllers\DinasLuarKotaController;
 use App\Http\Controllers\JabatanController;
-use App\Http\Controllers\LokasiKantorController;
+use App\Http\Controllers\TaskController;
 use App\Http\Controllers\PayrollController;
 use App\Http\Controllers\Api\ProfileController;
+use App\Http\Controllers\KasbonController;
+use App\Http\Controllers\PembayaranController;
+
 
 
 // Route for user registration
@@ -35,6 +38,15 @@ Route::middleware('auth:api')->group(function () {
     Route::post('absensi/masuk', [AbsensiController::class, 'absenMasuk']);
     Route::post('absensi/keluar', [AbsensiController::class, 'absenKeluar']);
     Route::get('/foto_masuk/{filename}', [AbsensiController::class, 'getFoto']);
+
+
+Route::apiResource('kasbon', KasbonController::class);
+Route::post('kasbon', [KasbonController::class, 'store']); // Membuat entri lembur baru
+
+Route::post('pembayaran', [PembayaranController::class, 'store']);
+Route::get('laporan', [KasbonController::class, 'laporan']);
+
+
 
 
 
@@ -70,6 +82,12 @@ Route::post('/dinas-luar-kota', [DinasLuarKotaController::class, 'store']);
 Route::get('/dinas-luar-kota/{id}', [DinasLuarKotaController::class, 'show']);
 Route::put('/dinas-luar-kota/{id}', [DinasLuarKotaController::class, 'update']);
 Route::delete('/dinas-luar-kota/{id}', [DinasLuarKotaController::class, 'destroy']);
+
+Route::get('/tasks', [TaskController::class, 'index']); // Menampilkan semua tugas berdasarkan karyawan
+    Route::get('/tasks/{id_tugas}', [TaskController::class, 'show']); // Menampilkan detail tugas
+    Route::post('/tasks', [TaskController::class, 'store']); // Membuat tugas baru
+    Route::put('/tasks/{id_tugas}', [TaskController::class, 'update']); // Mengupdate tugas
+    Route::delete('/tasks/{id_tugas}', [TaskController::class, 'destroy']); // Menghapus tugas
 
 Route::get('/payroll-summary', [PayrollController::class, 'getPayrollSummary']);
 });
