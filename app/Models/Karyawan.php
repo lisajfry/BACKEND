@@ -12,7 +12,7 @@ class Karyawan extends Authenticatable implements JWTSubject
 
     // Kolom-kolom yang boleh diisi secara massal
     protected $fillable = [
-        'nama_karyawan', 'nik', 'nip', 'email', 'no_handphone', 'alamat', 'password', 'device_code', 'avatar', 'jabatan_id'
+        'nama_karyawan', 'nik', 'nip', 'email', 'no_handphone', 'alamat', 'password', 'device_code', 'avatar', 'jabatan_id', 'fingerprint_template'
     ];
 
     // Kolom-kolom yang disembunyikan dari representasi array atau JSON
@@ -47,10 +47,20 @@ class Karyawan extends Authenticatable implements JWTSubject
     /**
      * Relasi antara karyawan dan jabatan
      */
-    // Model Karyawan.php
-public function jabatan()
-{
-    return $this->belongsTo(Jabatan::class, 'jabatan_id'); // Asumsi kolom foreign key-nya adalah 'id_jabatan'
-}
+    public function jabatan()
+    {
+        return $this->belongsTo(Jabatan::class, 'jabatan_id', 'id');
+    }
 
+    // Mutator untuk menyimpan fingerprint template
+    public function setFingerprintTemplateAttribute($value)
+    {
+        $this->attributes['fingerprint_template'] = base64_encode($value);
+    }
+
+    // Accessor untuk mengambil fingerprint template
+    public function getFingerprintTemplateAttribute($value)
+    {
+        return base64_decode($value);
+    }
 }

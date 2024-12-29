@@ -13,12 +13,12 @@ return new class extends Migration
             $table->foreignId('id_karyawan')->constrained('karyawans')->onDelete('cascade');
             $table->date('tgl_berangkat');
             $table->date('tgl_kembali');
-            $table->string('kota_tujuan');
-            $table->string('keperluan');
+            $table->string('kota_tujuan', 255);
+            $table->string('keperluan', 255);
             $table->decimal('biaya_transport', 10, 2);
             $table->decimal('biaya_penginapan', 10, 2);
             $table->decimal('uang_harian', 10, 2);
-            $table->decimal('total_biaya', 10, 2)->nullable(); // Ini akan dihitung otomatis
+            $table->decimal('total_biaya', 10, 2);
             $table->timestamps();
         });
     }

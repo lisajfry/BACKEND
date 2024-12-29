@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Http\Request;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AbsensiController;
 use App\Http\Controllers\LemburController;
@@ -20,10 +21,21 @@ Route::post('register', [AuthController::class, 'register']);
 // Route for user login
 Route::post('login', [AuthController::class, 'login']);
 
+Route::get('office-location', [AbsensiController::class, 'getOfficeLocation']);
+
+
 // Group routes that require API authentication
 Route::middleware('auth:api')->group(function () {
     // Route for user logout
     Route::post('logout', [AuthController::class, 'logout']);
+
+    // Route untuk memverifikasi token
+    
+    Route:
+Route::get('verify-token', function (Request $request) {
+        return response()->json(['message' => 'Token valid'], 200);
+    });
+
 
     // Route to get logged-in user details
     Route::get('karyawan', [AuthController::class, 'getKaryawan']);
@@ -38,6 +50,9 @@ Route::middleware('auth:api')->group(function () {
     Route::post('absensi/masuk', [AbsensiController::class, 'absenMasuk']);
     Route::post('absensi/keluar', [AbsensiController::class, 'absenKeluar']);
     Route::get('/foto_masuk/{filename}', [AbsensiController::class, 'getFoto']);
+    // routes/api.php
+
+
 
 
 Route::apiResource('kasbon', KasbonController::class);
@@ -47,7 +62,7 @@ Route::post('pembayaran', [PembayaranController::class, 'store']);
 Route::get('laporan', [KasbonController::class, 'laporan']);
 
 
-
+Route::get('/generate-slip-gaji', [PayrollController::class, 'generateSlipGaji']);
 
 
 

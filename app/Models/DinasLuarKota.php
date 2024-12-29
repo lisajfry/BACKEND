@@ -20,7 +20,8 @@ class DinasLuarKota extends Model
         'biaya_transport',
         'biaya_penginapan',
         'uang_harian',
-        'total_biaya'
+        'total_biaya',
+        'status'
     ];
 
     // Relasi dengan model Karyawan

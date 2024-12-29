@@ -30,4 +30,30 @@ class LemburController extends Controller
 
     return response()->json($lembur);
 }
+
+
+ // Menambahkan data lembur baru
+ public function store(Request $request)
+ {
+
+    // Get logged-in user ID
+    $userId = auth()->user()->id;
+     $validated = $request->validate([
+         'id_karyawan' => 'required|exists:karyawans,id',
+         'tanggal_lembur' => 'required|date',
+         'jam_mulai' => 'required|date_format:H:i:s',
+         'jam_selesai' => 'required|date_format:H:i:s|after:jam_mulai',
+         'alasan_lembur' => 'nullable|string',
+     ]);
+
+     // Hitung durasi lembur secara otomatis (dalam jam)
+     $start = strtotime($validated['jam_mulai']);
+     $end = strtotime($validated['jam_selesai']);
+     $validated['durasi_lembur'] = round(($end - $start) / 3600, 2); // Hitung selisih dalam jam dengan 2 desimal
+
+     $lembur = Lembur::create($validated);
+
+     return response()->json(['message' => 'Data lembur berhasil ditambahkan', 'data' => $lembur], 201);
+ }
+
 }

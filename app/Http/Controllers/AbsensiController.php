@@ -37,6 +37,9 @@ public function absenMasuk(Request $request)
         'longitude_masuk' => 'nullable|regex:/^-?\d{1,3}\.\d+$/',
         'lokasi_masuk' => 'nullable|string',
     ]);
+
+
+
     
     
     // Ambil id_karyawan dari pengguna yang sedang login
@@ -117,6 +120,74 @@ public function absenMasuk(Request $request)
     return response()->json($absensi, 201);
 }
 
+public function absenKeluar(Request $request)
+{
+    $validatedData = $request->validate([
+        'tanggal' => 'required|date',
+        'jam_keluar' => 'required|date_format:H:i:s',
+        'foto_keluar' => 'required|string',
+        'latitude_keluar' => 'nullable|regex:/^-?\d{1,3}\.\d+$/',
+        'longitude_keluar' => 'nullable|regex:/^-?\d{1,3}\.\d+$/',
+        'lokasi_keluar' => 'nullable|string',
+    ]);
+
+    $idKaryawan = auth()->user()->id;
+    $tanggal = Carbon::parse($validatedData['tanggal'])->format('Y-m-d');
+
+    // Periksa apakah absensi masuk untuk tanggal ini sudah ada
+    $absensi = Absensi::where('id_karyawan', $idKaryawan)
+        ->whereDate('tanggal', $tanggal)
+        ->first();
+
+    if (!$absensi) {
+        return response()->json([
+            'message' => 'Anda belum melakukan absensi masuk pada tanggal ini.'
+        ], 400);
+    }
+
+    // Jika jam keluar sudah ada, larang absensi keluar kedua kalinya
+    if ($absensi->jam_keluar) {
+        return response()->json([
+            'message' => 'Anda sudah melakukan absensi keluar pada tanggal ini.'
+        ], 400);
+    }
+
+    // Jika koordinat tersedia, lakukan reverse geocoding
+    if (!empty($validatedData['latitude_keluar']) && !empty($validatedData['longitude_keluar'])) {
+        $alamat = $this->getAlamatDariKoordinat($validatedData['latitude_keluar'], $validatedData['longitude_keluar']);
+        $validatedData['lokasi_keluar'] = $alamat;
+    }
+
+    // Update data absensi dengan jam keluar, lokasi, dan foto
+    $absensi->update([
+        'jam_keluar' => $validatedData['jam_keluar'],
+        'foto_keluar' => $validatedData['foto_keluar'],
+        'latitude_keluar' => $validatedData['latitude_keluar'],
+        'longitude_keluar' => $validatedData['longitude_keluar'],
+        'lokasi_keluar' => $validatedData['lokasi_keluar'], // Ensure this field is updated as well
+    ]);
+
+    return response()->json($absensi, 201);
+}
+
+
+
+
+// app/Http/Controllers/AbsensiController.php
+
+public function getOfficeLocation()
+{
+    // Hardcode koordinat kantor
+    $latitude = -7.636785618907347; // Latitude kantor
+    $longitude = 111.54257262113632; // Longitude kantor
+
+    return response()->json([
+        'latitude' => $latitude,
+        'longitude' => $longitude,
+    ]);
+}
+
+
 
     
 
@@ -138,3 +209,7 @@ public function absenMasuk(Request $request)
 
     
 }
+
+
+
+

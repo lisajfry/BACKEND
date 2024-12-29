@@ -12,8 +12,14 @@ class Lembur extends Model
     protected $table = 'lembur';
 
     protected $fillable = [
-        'id_karyawan', 'tgl_lembur', 'jam_lembur', 'upah_lembur',
+        'id_karyawan',
+        'tanggal_lembur',
+        'jam_mulai',
+        'jam_selesai',
+        'durasi_lembur',
+        'alasan_lembur',
     ];
+    
 
     public function karyawan()
     {

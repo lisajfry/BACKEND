@@ -10,9 +10,15 @@ class DinasLuarKotaController extends Controller
 {
     public function index()
     {
-        $dinasLuarKota = DinasLuarKota::with('karyawan')->get(); // Memuat karyawan yang terkait
+        $userId = Auth::id();
+        if (!$userId) {
+            return response()->json(['message' => 'User not authenticated'], 401);
+        }
+
+        $dinasLuarKota = DinasLuarKota::where('id_karyawan', $userId)->get();
         return response()->json($dinasLuarKota);
     }
+    
 
     public function store(Request $request)
     {

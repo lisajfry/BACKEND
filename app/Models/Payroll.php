@@ -16,5 +16,11 @@ class Payroll extends Model
     {
         return $this->hasMany(DinasLuar::class);
     }
+
+    public function karyawan()
+{
+    return $this->belongsTo(Karyawan::class);
+}
+
 }
 

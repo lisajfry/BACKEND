@@ -27,6 +27,9 @@ class Task extends Model
         'tgl_mulai',
         'batas_penyelesaian',
         'tgl_selesai',
+        'point',
+        'status_approval'
+    
     ];
 
     // Relasi ke model Karyawan

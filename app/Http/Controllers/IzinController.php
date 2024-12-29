@@ -37,28 +37,52 @@ class IzinController extends Controller
 
     // Menambah izin baru
     public function store(Request $request)
-    {
-        $request->validate([
-            'tgl_mulai' => 'required|date',
-            'tgl_selesai' => 'required|date|after_or_equal:tgl_mulai',
-            'alasan' => 'required|string',
-            'keterangan' => 'nullable|string',
-        ]);
+{
+    $request->validate([
+        'tgl_mulai' => 'required|date',
+        'tgl_selesai' => 'required|date|after_or_equal:tgl_mulai',
+        'alasan' => 'required|string',
+        'keterangan' => 'nullable|string',
+    ]);
 
-        $durasi = now()->parse($request->tgl_selesai)->diffInDays($request->tgl_mulai) + 1;
+    $idKaryawan = Auth::id();
 
-        $izin = Izin::create([
-            'id_karyawan' => Auth::id(),
-            'tgl_mulai' => $request->tgl_mulai,
-            'tgl_selesai' => $request->tgl_selesai,
-            'alasan' => $request->alasan,
-            'keterangan' => $request->keterangan,
-            'durasi' => $durasi,
-            'status' => 'pending',
-        ]);
+    // Cek apakah sudah ada izin di rentang tanggal yang sama
+    $existingIzin = Izin::where('id_karyawan', $idKaryawan)
+        ->where(function ($query) use ($request) {
+            $query->whereBetween('tgl_mulai', [$request->tgl_mulai, $request->tgl_selesai])
+                  ->orWhereBetween('tgl_selesai', [$request->tgl_mulai, $request->tgl_selesai])
+                  ->orWhere(function ($query) use ($request) {
+                      $query->where('tgl_mulai', '<=', $request->tgl_mulai)
+                            ->where('tgl_selesai', '>=', $request->tgl_selesai);
+                  });
+        })
+        ->exists();
 
-        return response()->json($izin, 201);
+    if ($existingIzin) {
+        return response()->json([
+            'message' => 'Pengajuan izin pada tanggal ini sudah ada. Anda hanya dapat mengajukan izin satu kali untuk rentang tanggal yang sama.'
+        ], 400);
     }
+
+    $durasi = now()->parse($request->tgl_selesai)->diffInDays($request->tgl_mulai) + 1;
+
+    $izin = Izin::create([
+        'id_karyawan' => $idKaryawan,
+        'tgl_mulai' => $request->tgl_mulai,
+        'tgl_selesai' => $request->tgl_selesai,
+        'alasan' => $request->alasan,
+        'keterangan' => $request->keterangan,
+        'durasi' => $durasi,
+        'status' => 'pending',
+    ]);
+
+    return response()->json([
+        'message' => 'Pengajuan izin berhasil dibuat.',
+        'data' => $izin
+    ], 201);
+}
+
 
     // Menampilkan izin berdasarkan ID
     public function show($id)

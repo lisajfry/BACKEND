@@ -18,6 +18,10 @@ class Absensi extends Model
         'foto_masuk',
         'latitude_masuk',
         'longitude_masuk',
+        'jam_keluar',       // Tambahkan kolom jam keluar
+        'foto_keluar',      // Tambahkan kolom foto keluar
+        'latitude_keluar',  // Tambahkan kolom latitude keluar
+        'longitude_keluar', // Tambahkan kolom longitude keluar
         'status',
     ];
 
