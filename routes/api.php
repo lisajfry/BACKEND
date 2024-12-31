@@ -42,8 +42,8 @@ Route::get('verify-token', function (Request $request) {
 
     // Profile routes
     Route::get('profile', [ProfileController::class, 'index']);
-    Route::put('profile/update', [ProfileController::class, 'update']);
-    Route::post('profile/upload-avatar', [ProfileController::class, 'uploadAvatar']);
+    Route::put('profile', [ProfileController::class, 'update']);
+    Route::post('profile/avatar', [ProfileController::class, 'uploadAvatar']);
 
     // Absensi routes
     Route::get('absensi', [AbsensiController::class, 'index']);

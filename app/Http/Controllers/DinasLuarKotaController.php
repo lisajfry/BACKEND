@@ -8,16 +8,33 @@ use Illuminate\Support\Facades\Auth; // Tambahkan ini
 
 class DinasLuarKotaController extends Controller
 {
-    public function index()
-    {
-        $userId = Auth::id();
-        if (!$userId) {
-            return response()->json(['message' => 'User not authenticated'], 401);
-        }
-
-        $dinasLuarKota = DinasLuarKota::where('id_karyawan', $userId)->get();
-        return response()->json($dinasLuarKota);
+    public function index(Request $request)
+{
+    $userId = Auth::id();
+    if (!$userId) {
+        return response()->json(['message' => 'User not authenticated'], 401);
     }
+
+    // Ambil parameter bulan dan tahun dari query string
+    $bulan = $request->query('bulan');
+    $tahun = $request->query('tahun');
+
+    // Query dinas luar kota dengan filter bulan dan tahun jika ada
+    $dinasLuarKota = DinasLuarKota::where('id_karyawan', $userId)
+        ->when($bulan, function ($query) use ($bulan) {
+            return $query->whereMonth('tgl_berangkat', $bulan);
+        })
+        ->when($tahun, function ($query) use ($tahun) {
+            return $query->whereYear('tgl_berangkat', $tahun);
+        })
+        ->get();
+
+    return response()->json($dinasLuarKota);
+}
+
+
+
+    
     
 
     public function store(Request $request)

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Karyawan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -43,6 +44,7 @@ class ProfileController extends Controller
             'nama_karyawan' => 'required|string|max:255',
             'no_handphone' => 'required|string|max:15',
             'alamat' => 'required|string|max:255',
+
         ]);
 
         try {
@@ -73,47 +75,19 @@ class ProfileController extends Controller
 
     public function uploadAvatar(Request $request)
 {
-    \Log::info('Upload avatar called');
-    
-    // Validasi input file
     $request->validate([
-        'avatar' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+        'avatar' => 'required|image|max:2048', // Validasi file
     ]);
 
-    try {
-        $karyawan = Auth::guard('api')->user();
-        \Log::info('Authenticated User ID: ' . $karyawan->id);
+    $path = $request->file('avatar')->store('avatars', 'public');
+    $user = auth()->user();
+    $user->avatar = $path;
+    $user->save();
 
-        // Jika sudah ada avatar sebelumnya, hapus file lama
-        if ($karyawan->avatar && Storage::disk('public')->exists($karyawan->avatar)) {
-            Storage::disk('public')->delete($karyawan->avatar);
-            \Log::info('Old avatar deleted: ' . $karyawan->avatar);
-        }
-
-        // Simpan file avatar baru ke storage
-        $path = $request->file('avatar')->store('avatars', 'public');
-        \Log::info('New avatar uploaded: ' . $path);
-
-        $karyawan->avatar = $path;
-        $karyawan->save();
-        \Log::info('Avatar updated in database');
-
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Avatar uploaded successfully',
-            'profile' => [
-                'nama_karyawan' => $karyawan->nama_karyawan,
-                'avatar_url' => asset('storage/' . $path),
-            ],
-        ], 200);
-    } catch (\Exception $e) {
-        \Log::error('Upload avatar failed: ' . $e->getMessage());
-        return response()->json([
-            'status' => 'error',
-            'message' => 'Failed to upload avatar',
-            'error' => $e->getMessage(),
-        ], 500);
-    }
+    return response()->json(['avatar_url' => asset('storage/' . $path)], 200);
 }
 
+
+
+   
 }

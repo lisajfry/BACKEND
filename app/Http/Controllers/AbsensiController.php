@@ -23,7 +23,13 @@ class AbsensiController extends Controller
     // Ambil data absensi berdasarkan ID karyawan yang sedang login
     $absensi = Absensi::where('id_karyawan', $idKaryawan)->get();
 
+
+    
+
     return response()->json($absensi);
+
+
+
     
 }
 
@@ -178,8 +184,8 @@ public function absenKeluar(Request $request)
 public function getOfficeLocation()
 {
     // Hardcode koordinat kantor
-    $latitude = -7.636785618907347; // Latitude kantor
-    $longitude = 111.54257262113632; // Longitude kantor
+    $latitude = -7.506063779717047; // Latitude kantor
+    $longitude = 111.70583177210116; // Longitude kantor
 
     return response()->json([
         'latitude' => $latitude,

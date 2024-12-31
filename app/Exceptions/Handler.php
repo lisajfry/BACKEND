@@ -45,4 +45,20 @@ class Handler extends ExceptionHandler
             //
         });
     }
+
+
+    public function render($request, Throwable $exception)
+    {
+        // Check if the request is expecting JSON (API request)
+        if ($request->is('api/*')) {
+            // Return exception message in JSON format
+            return response()->json([
+                'message' => $exception->getMessage(),
+                'error' => true,
+            ], $exception->getCode() ?: 500);
+        }
+
+        // For regular web requests, fallback to default rendering
+        return parent::render($request, $exception);
+    }
 }

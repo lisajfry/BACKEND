@@ -63,4 +63,10 @@ class Karyawan extends Authenticatable implements JWTSubject
     {
         return base64_decode($value);
     }
+
+    public function getAvatarUrlAttribute()
+{
+    return $this->avatar ? asset('storage/' . $this->avatar) : asset('storage/default-avatar.png');
+}
+
 }

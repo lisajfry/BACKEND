@@ -53,6 +53,8 @@ class AuthController extends Controller
             $karyawan->save();
         }
 
+        
+
         // Membuat token JWT untuk karyawan yang sudah ada
         $token = JWTAuth::fromUser($karyawan);
 

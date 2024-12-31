@@ -19,7 +19,7 @@ return new class extends Migration
             $table->string('password');
             $table->foreignId('jabatan_id')->nullable()->constrained('jabatan')->onDelete('cascade');
             $table->string('device_code')->nullable()->unique(); // Unique device code for login restriction
-            $table->string('avatar')->nullable(); // Nullable avatar field
+            $table->longText('avatar')->nullable(); // Ubah menjadi longText untuk menyimpan base64
             $table->timestamps();
         });
     }
